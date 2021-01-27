@@ -56,37 +56,7 @@
       </div>
     </app-root>
 
-    <script src="https://icdcdn.azureedge.net/embeddedct/icd11ect-1.3.js"></script>
     <script src="https://unpkg.com/react@16/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@16/umd/react-dom.production.min.js"></script>
-    <script>
-        // Embedded Coding Tool settings object
-        // please note that only the property "apiServerUrl" is required
-        // the other properties are optional
-        const mySettings = {
-        apiServerUrl: "https://icd11restapi-developer-test.azurewebsites.net",
-        // apiSecured: true,
-        icdMinorVersion: "2019-04" ,
-        icdLinearization: "mms",
-        language: "en",
-        sourceApp: "Test App",
-        wordsAvailable: true,
-        chaptersAvailable: true,
-        flexisearchAvailable: true,
-        //subtreesFilter: "http://id.who.int/icd/entity/588616678",
-        height: "300px"
-        };
-
-        // ECT guna callbacks and iNo for all the html object
-        const myCallbacks = {
-            selectedEntityFunction: (selectedEntity) => {
-            document.getElementById("demo-paste-selected-" + selectedEntity.iNo).value = selectedEntity.code;
-      }
-    };
-
-    // configure the ECT Handler with mySettings and myCallbacks
-        ECT.Handler.configure(mySettings, myCallbacks);
-    </script>
-
   </body>
 </html>

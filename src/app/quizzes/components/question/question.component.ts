@@ -1,6 +1,7 @@
-import { Component, EventEmitter, Input, OnChanges, Output, SimpleChange } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Input, OnChanges, Output, SimpleChange, Inject, Renderer2 } from '@angular/core';
 import { AbstractControl, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { DOCUMENT } from '@angular/common';
 
 import { Quiz } from '../../models/quiz.model';
 import { Question } from '../../models/question.model';
@@ -8,7 +9,7 @@ import { AnswerModel } from '../../models/answer.model';
 import { Answer } from '../../models/answer.type';
 import { SubmitAnswerModel } from '../../store/quizzes.payloads';
 
-
+import * as ECT from '@whoicd/icd11ect';
 @Component({
   selector: 'app-question',
   templateUrl: './question.component.html',
@@ -25,12 +26,18 @@ export class QuestionComponent implements OnChanges {
   @Input() isEvaluation: boolean;
   @Output() submitAnswer: EventEmitter<SubmitAnswerModel> = new EventEmitter<SubmitAnswerModel>(false);
   @Output() restartQuiz: EventEmitter<Quiz> = new EventEmitter<Quiz>(false);
+  @Inject(DOCUMENT) document;
 
+  icdcode: string;
   answerForm: AbstractControl = new FormGroup({
     answer: new FormControl(),
   });
 
-  constructor(private formBuilder: FormBuilder, private router: Router) {}
+  constructor(
+    private formBuilder: FormBuilder,
+    private router: Router,
+    private renderer: Renderer2
+    ) {}
 
   ngOnChanges(changes: {[propKey: string]: SimpleChange}): void {
     if (changes.question) {
@@ -62,8 +69,35 @@ export class QuestionComponent implements OnChanges {
           break;
         case 'TEXT':
           this.answerForm = this.formBuilder.group({
-            answer: [null, Validators.required],
+            answer: [''],
           });
+          this.renderExternalScript('https://icdcdn.azureedge.net/embeddedct/icd11ect-1.3.js').onload = () => {
+            const mySettings = {
+              apiServerUrl: "https://icd11restapi-developer-test.azurewebsites.net",
+              // apiSecured: true,
+              icdMinorVersion: "2019-04" ,
+              icdLinearization: "mms",
+              language: "en",
+              sourceApp: "Test App",
+              wordsAvailable: false,
+              chaptersAvailable: true,
+              flexisearchAvailable: true,
+              //subtreesFilter: "http://id.who.int/icd/entity/588616678",
+              height: "300px"
+              };
+
+              // ECT guna callbacks and iNo for all the html object7ui
+              const myCallbacks = {
+                  selectedEntityFunction: (selectedEntity) => {
+                  (<HTMLInputElement>document.getElementById("demo-paste-selected-" + selectedEntity.iNo)).value = selectedEntity.code;
+                  this.icdcode = selectedEntity.code
+                  }
+              };
+          // configure the ECT Handler with mySettings and myCallbacks
+              ECT.Handler.configure(mySettings, myCallbacks);
+              ECT.Handler.clear("1");
+              ECT.Handler.bind("1");
+          }
           break;
       }
 
@@ -89,7 +123,7 @@ export class QuestionComponent implements OnChanges {
         answer = this.answerForm.value.answers;
         break;
       case 'TEXT':
-        answer = this.answerForm.value.answer;
+        answer = this.icdcode;
         break;
     }
     const submitAnswer: SubmitAnswerModel = {
@@ -120,5 +154,15 @@ export class QuestionComponent implements OnChanges {
 
   asNumberList(value: any): number[] {
     return value as number[];
+  }
+
+  renderExternalScript(src: string): HTMLScriptElement {
+    const script = document.createElement('script');
+    script.type = 'text/javascript';
+    script.src = src;
+    script.async = true;
+    script.defer = true;
+    this.renderer.appendChild(document.body, script);
+    return script;
   }
 }

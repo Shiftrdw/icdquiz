@@ -110,11 +110,12 @@
             </ng-template>
           </div>
           <div *ngSwitchCase="'TEXT'">
-            <div *ngIf="!answer; else answerExists" class="answer field">
-              <div class="control">
-                <input class="ctw-input" autocomplete="off" data-ctw-ino="1" i18n-placeholder placeholder="Answer" autofocus formControlName="answer" id="demo-paste-selected-1">
-                <button class="demo-clear" onclick="ECT.Handler.clear('1');" title="Clear search and results">❌</button>
-                <input class="ect-selected" id="demo-paste-selected-1" formControlName="answer">
+            <div class="answer field">
+              <div  class="control">
+                <input class="ctw-input" autocomplete="off" data-ctw-ino="1" i18n-placeholder placeholder="Answer" autofocus>
+                <div *ngIf="!answer; else answerExists">
+                  <input class="ect-selected" id="demo-paste-selected-1" formControlName="answer">
+                </div>
               </div>
               <div class="ctw-window" data-ctw-ino="1"></div>
             </div>
